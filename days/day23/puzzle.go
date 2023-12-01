@@ -31,7 +31,7 @@ func Puzzle2() {
     if err != nil {
         panic (err)
     }
-    filename := filepath.Join(wd, dayName, "input.txt")
+    filename := filepath.Join(wd, "days", dayName, "input.txt")
     inputSlice := input.GetInputSlice(filename)
 
     // Implementation
