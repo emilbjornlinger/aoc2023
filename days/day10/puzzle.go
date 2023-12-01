@@ -26,7 +26,6 @@ func Puzzle1() {
     fmt.Printf("Output: %v\n", output)
 }
 
-// Should be between 55680 and 55821
 func Puzzle2() {
     wd, err  := os.Getwd()
     if err != nil {
