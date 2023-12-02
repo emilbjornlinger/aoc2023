@@ -5,6 +5,8 @@ import (
     "os"
     "path/filepath"
     "aoc2023/input"
+    "strings"
+    "strconv"
 )
 
 const dayName string = "day2"
@@ -17,13 +19,43 @@ func Puzzle1() {
     filename := filepath.Join(wd, "days", dayName, "input.txt")
     inputSlice := input.GetInputSlice(filename)
 
-    // Implementation
+    sum := 0
+    currID := 0
     for _, line := range inputSlice {
-        fmt.Println(line)
+        currID++
+        possible := true
+
+        setString := strings.Split(line, ":")[1]
+        sets := strings.Split(setString, ";")
+        
+        for _, countString := range sets {
+            counts := strings.Fields(countString)
+            
+            for i := 0; i < len(counts); i += 2 {
+                num, err := strconv.Atoi(counts[i])
+                if err != nil {
+                    panic(err)
+                }
+
+                if strings.Contains(counts[i+1], "red") && num > 12 {
+                    possible = false 
+                    break
+                } else if strings.Contains(counts[i+1], "green") && num > 13 {
+                    possible = false
+                    break
+                } else if strings.Contains(counts[i+1], "blue") && num > 14 {
+                    possible = false
+                    break
+                }
+            }
+        }
+
+        if possible {
+            sum = sum + currID
+        }
     }
 
-    output := "Hello from " + dayName
-    fmt.Printf("Output: %v\n", output)
+    fmt.Printf("Output: %v\n", sum)
 }
 
 func Puzzle2() {
@@ -34,11 +66,43 @@ func Puzzle2() {
     filename := filepath.Join(wd, "days", dayName, "input.txt")
     inputSlice := input.GetInputSlice(filename)
 
-    // Implementation
+    sum := 0
     for _, line := range inputSlice {
-        fmt.Println(line)
+        setString := strings.Split(line, ":")[1]
+        sets := strings.Split(setString, ";")
+
+        minRed := 0
+        minGreen := 0
+        minBlue := 0
+        
+        for _, countString := range sets {
+            counts := strings.Fields(countString)
+            
+            for i := 0; i < len(counts); i += 2 {
+                num, err := strconv.Atoi(counts[i])
+                if err != nil {
+                    panic(err)
+                }
+
+                if strings.Contains(counts[i+1], "red") {
+                    if num > minRed {
+                        minRed = num
+                    }
+                } else if strings.Contains(counts[i+1], "green") {
+                    if num > minGreen {
+                        minGreen = num
+                    }
+                } else if strings.Contains(counts[i+1], "blue") {
+                    if num > minBlue {
+                        minBlue = num
+                    }
+                }
+            }
+        }
+
+        power := minRed * minGreen * minBlue
+        sum += power
     }
 
-    output := "Hello from " + dayName
-    fmt.Printf("Output: %v\n", output)
+    fmt.Printf("Output: %v\n", sum)
 }
