@@ -41,22 +41,15 @@ func Puzzle2() {
     filename := filepath.Join(wd, "days", dayName, "input.txt")
     inputSlice := input.GetInputSlice(filename)
 
-    for _, line := range inputSlice {
-        fmt.Println(line)
+    fmt.Printf("%v\n", inputSlice[0])
 
-        // Create card type with card number and winning cards
-
-        // Parse all cards and extract winning numbers
-
-        // Loop over all cards in new slice
-
-        // Have a recursive function that will handle one card and then handle
-        // the cards that that card has won, each time we enter the recursive
-        // function a pointer or global variable is incremented, representing 
-        // that that card is won
+    cards := make([]int, len(inputSlice))
+    for i := range cards {
+        cards[i] = 1
     }
 
-    output := "Hello from " + dayName
+    output := evaluateCards(&cards, inputSlice)
+
     fmt.Printf("Output: %v\n", output)
 }
 
@@ -82,4 +75,50 @@ func countLine(line string) int {
     }
 
     return lineCount
+}
+
+func countLine2(line string) int {
+    lineCount := 0
+
+    splitColon := strings.Split(line, ":")
+    splitBar := strings.Split(splitColon[1], "|")
+
+    winning := strings.Split(splitBar[0], " ")
+    numbers := strings.Split(splitBar[1], " ")
+
+    for _, num := range numbers {
+        if slices.Contains(winning, num) {
+            if num != "" {
+                lineCount++
+            }
+        }
+    }
+
+    return lineCount
+}
+
+func evaluateCards(cards *[]int, lines []string) int {
+    currentCardIndex := 0
+    count := 0
+
+    for (*cards)[len(*cards)-1] != 0 {
+        count++
+        processCard(cards, currentCardIndex, lines[currentCardIndex])
+        (*cards)[currentCardIndex]--
+
+        if (*cards)[currentCardIndex] == 0 {
+            currentCardIndex++
+            fmt.Printf("index: %v\n", currentCardIndex)
+        }
+    }
+
+    return count
+}
+
+func processCard(cards *[]int, currentCardIndex int, line string) {
+    wins := countLine2(line)
+
+    for i := 1; i <= wins; i++ {
+        (*cards)[currentCardIndex+i] = (*cards)[currentCardIndex+i]+1
+    }
 }
