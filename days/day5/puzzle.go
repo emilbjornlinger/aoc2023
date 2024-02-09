@@ -35,6 +35,7 @@ func Puzzle1() {
 
     mappings := []string{"seed-to-soil", "soil-to-fertilizer", "fertilizer-to-water", "water-to-light", "light-to-temperature", "temperature-to-humidity", "humidity-to-location"}
 
+
     // Create and populate ranges for each mapping
     seedToSoil := make([]Range, 0)
     populate(&seedToSoil, "seed-to-soil", inputSlice)
@@ -100,7 +101,7 @@ func Puzzle2() {
     filename := filepath.Join(wd, "days", dayName, "test.txt")
     inputSlice := input.GetInputSlice(filename)
 
-    //mappings := []string{"seed-to-soil", "soil-to-fertilizer", "fertilizer-to-water", "water-to-light", "light-to-temperature", "temperature-to-humidity", "humidity-to-location"}
+    mappings := []string{"seed-to-soil", "soil-to-fertilizer", "fertilizer-to-water", "water-to-light", "light-to-temperature", "temperature-to-humidity", "humidity-to-location"}
 
     // Create and populate ranges for each mapping
     seedToSoil := make([]Range, 0)
@@ -142,21 +143,17 @@ func Puzzle2() {
         r.Print()
     }
 
+    // Get output ranges
     lowestLocation := MaxInt
-    //for i, seed := range seeds {
-    //    input := seed
-    //    for _, mapping := range mappings {
-    //        input = transform(mappingsToRange[mapping], input)
-    //    }
-
-    //    fmt.Printf("output for seed %v: %v\n", i, input)
-
-    //    if input < lowestLocation {
-    //        lowestLocation = input
-    //    }
-    //}
+    for _, mapping := range mappings {
+        transformCategory(&ranges, mappingsToRange[mapping])
+    }
 
     // Extract lowest location from ranges
+    for _, r := range ranges {
+        r.Print()
+    }
+
 
     fmt.Printf("Output: %v\n", lowestLocation)
 }
@@ -223,6 +220,46 @@ func extractSeedRanges(rangeList *[]CatRange, input string) {
             (*rangeList) = append((*rangeList), newRange)
         }
     }
+}
+
+/*
+ * - Loop through each category range
+ * - Loop through mappings 
+ * - If start in a mapping range
+ *      - Start new catRange and find end of range
+ *          - If end of mapping
+ *              - Update the start of catRange and tick back index to handle same range
+ *              - Set end of newly created range
+ *          - Else
+ *              - Set end of newly created range
+ * - Else
+ *      - Start new catRange and find end of range
+ *      - Loop through mappings and find smallest start in catRange 
+ *          - If start of mapping is in catRange 
+ *              - Update the start of catRange and tick back index to handle same range
+ *              - Set end of newly created range 
+ *          - Else 
+ *              - Set end of newly created range
+ */
+func transformCategory(ranges *[]CatRange, mappings []Range) {
+    // Create new temporary catRange that will replace the passed in pointer
+    newRanges := make([]CatRange, 0)
+
+    // Loop through each category range
+    catIndex := 0
+    for catIndex != len(*ranges) {
+        for mappingIndex, mapping := range mappings {
+            if (*ranges)[catIndex].start < // CONTINUE HERE
+
+        }
+
+        // Check if in a mapping
+
+        catIndex++
+    }
+
+    // Return new ranges
+    *ranges = newRanges
 }
 
 func (r *Range) Print() {
