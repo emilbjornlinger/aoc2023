@@ -98,7 +98,7 @@ func Puzzle2() {
     if err != nil {
         panic (err)
     }
-    filename := filepath.Join(wd, "days", dayName, "test.txt")
+    filename := filepath.Join(wd, "days", dayName, "input.txt")
     inputSlice := input.GetInputSlice(filename)
 
     mappings := []string{"seed-to-soil", "soil-to-fertilizer", "fertilizer-to-water", "water-to-light", "light-to-temperature", "temperature-to-humidity", "humidity-to-location"}
@@ -151,7 +151,9 @@ func Puzzle2() {
 
     // Extract lowest location from ranges
     for _, r := range ranges {
-        r.Print()
+        if r.start < lowestLocation {
+            lowestLocation = r.start
+        } 
     }
 
 
@@ -227,7 +229,7 @@ func extractSeedRanges(rangeList *[]CatRange, input string) {
  * - Loop through mappings 
  * - If start in a mapping range
  *      - Start new catRange and find end of range
- *          - If end of mapping
+ *          - If outside end of mapping
  *              - Update the start of catRange and tick back index to handle same range
  *              - Set end of newly created range
  *          - Else
@@ -248,14 +250,65 @@ func transformCategory(ranges *[]CatRange, mappings []Range) {
     // Loop through each category range
     catIndex := 0
     for catIndex != len(*ranges) {
+        mappingIndexOfStart := -1
         for mappingIndex, mapping := range mappings {
-            if (*ranges)[catIndex].start < // CONTINUE HERE
-
+            if (*ranges)[catIndex].start >= mapping.start && (*ranges)[catIndex].start <= mapping.end {
+                // Will only happen once
+                mappingIndexOfStart = mappingIndex
+            }
         }
 
+        // Create new transformed range
+        transformedRange := CatRange{start: -1, end: -1}
         // Check if in a mapping
+        if mappingIndexOfStart != -1 {
+            // Transform start
+            transformedRange.start = mappings[mappingIndexOfStart].outputStart + ((*ranges)[catIndex].start - mappings[mappingIndexOfStart].start)
+
+            // Find end of range
+            if (*ranges)[catIndex].end > mappings[mappingIndexOfStart].end {
+                // Range outside of mapping, end new range, update start of old range and set back catIndex
+                newRangeLength := mappings[mappingIndexOfStart].end - (*ranges)[catIndex].start
+                transformedRange.end = transformedRange.start + newRangeLength 
+                (*ranges)[catIndex].start = (*ranges)[catIndex].start + newRangeLength + 1
+                catIndex--
+            } else {
+                // Range inside mapping, transform end
+                transformedRange.end = mappings[mappingIndexOfStart].outputStart + ((*ranges)[catIndex].end - mappings[mappingIndexOfStart].start)
+            }
+        } else {
+            // Start of range is not in a mapping
+            transformedRange.start = (*ranges)[catIndex].start
+
+            // Loop through mappings and find smallest start of mapping that is inside the current
+            // CatRange
+            smallestMappingIndex := -1
+            for mappingIndex, mapping := range mappings {
+                if (*ranges)[catIndex].start <= mapping.start && (*ranges)[catIndex].end >= mapping.start {
+                    if smallestMappingIndex == -1 {
+                        smallestMappingIndex = mappingIndex
+                    } else if mappingIndex < smallestMappingIndex {
+                        smallestMappingIndex = mappingIndex
+                    } else {
+                        // Do nothing
+                    }
+                }
+            }
+
+            if smallestMappingIndex != -1 {
+                // Mapping starts inside current CatRange, set end of new range, update start of old
+                // range and tick back catIndex
+                transformedRange.end = mappings[smallestMappingIndex].start - 1
+                (*ranges)[catIndex].start = mappings[smallestMappingIndex].start
+                catIndex--
+            } else {
+                // Not inside any mapping, set end to end of current CatRange
+                transformedRange.end = (*ranges)[catIndex].end
+            }
+        }
 
         catIndex++
+        newRanges = append(newRanges, transformedRange)
     }
 
     // Return new ranges
