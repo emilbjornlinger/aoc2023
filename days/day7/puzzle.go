@@ -25,6 +25,7 @@ const (
 type Card int
 
 const (
+    Knight  Card = 1
     Two     Card = 2
     Three   Card = 3
     Four    Card = 4
@@ -34,7 +35,6 @@ const (
     Eight   Card = 8
     Nine    Card = 9
     Ten     Card = 10
-    Knight  Card = 11
     Queen   Card = 12
     King    Card = 13
     Ace     Card = 14
@@ -96,18 +96,23 @@ func Puzzle2() {
     filename := filepath.Join(wd, "days", dayName, "input.txt")
     inputSlice := input.GetInputSlice(filename)
 
-    // Implementation
-    for _, line := range inputSlice {
-        fmt.Println(line)
-    }
-    
-    // For puzzle 2, create a new function CreateEntryFromStringWithSwappingJs 
-    // that will do the same thing as CreateEntryFromString but after GetHandFromCards has been called will try to substitute 
-    // The J's to be one of the other existing cards, try this for all combinations available and then check what the 
-    // highest HandType returned is, set the final handType to be this but keep the cards as they were
+    entries := make([]Entry, 0)
 
-    output := "Hello from " + dayName
-    fmt.Printf("Output: %v\n", output)
+    // Populate entries
+    for _, line := range inputSlice {
+        entries = append(entries, CreateEntryFromStringWithSwappingJs(line))
+    }
+
+    // Sort the entries
+    sort.Stable(EntryList(entries))
+
+    // After sorted loop through and use loop index to determine rank and sum up the winnings
+    totalWinnings := 0
+    for i, entry := range(entries) {
+        totalWinnings = totalWinnings + (i + 1) * entry.bid
+    }
+
+    fmt.Printf("Output: %v\n", totalWinnings)
 }
 
 func CreateEntryFromString(line string) Entry {
@@ -119,6 +124,48 @@ func CreateEntryFromString(line string) Entry {
 
     // Create and set the hand of the entry
     newEntry.hand = GetHandFromCards(cards)
+
+    return newEntry
+}
+
+func CreateEntryFromStringWithSwappingJs(line string) Entry {
+    newEntry := Entry{}
+    cards, bid := GetCardsAndBid(line)
+
+    // Set the bid of the entry
+    newEntry.bid = bid
+
+    // Create and set the hand of the entry
+    newEntry.hand = GetHandFromCards(cards)
+
+    // Loop through each card in the new hand and get indices of knights
+    jIndices := make([]int, 0)
+    for i, card := range(newEntry.hand.cards) {
+        if card == Knight {
+            jIndices = append(jIndices, i)
+        }
+    }
+
+    swappedEntry := Entry{}
+    swappedCards := make([]Card, len(newEntry.hand.cards))
+    // Swap each knight for another card
+    for _, card := range(newEntry.hand.cards) {
+        _ = copy(swappedCards, newEntry.hand.cards)
+        if card == Knight {
+            continue
+        } else {
+            for _, index := range(jIndices) {
+                swappedCards[index] = card
+            }
+
+            // Get a new hand type and compare to old one, if higher, replace
+            swappedEntry.hand = GetHandFromCards(GetStringFromCards(swappedCards))
+
+            if swappedEntry.hand.handType > newEntry.hand.handType {
+                newEntry.hand.handType = swappedEntry.hand.handType
+            }
+        }
+    }
 
     return newEntry
 }
@@ -218,6 +265,43 @@ func GetCardsFromString(cardString string) []Card {
     }
 
     return cards
+}
+
+func GetStringFromCards(input []Card) string {
+    retVal := ""
+
+    for _, card := range(input) {
+        switch card {
+        case Two:
+            retVal = retVal + "2"
+        case Three:
+            retVal = retVal + "3"
+        case Four:
+            retVal = retVal + "4"
+        case Five:
+            retVal = retVal + "5"
+        case Six:
+            retVal = retVal + "6"
+        case Seven:
+            retVal = retVal + "7"
+        case Eight:
+            retVal = retVal + "8"
+        case Nine:
+            retVal = retVal + "9"
+        case Ten:
+            retVal = retVal + "T"
+        case Knight:
+            retVal = retVal + "J"
+        case Queen:
+            retVal = retVal + "Q"
+        case King:
+            retVal = retVal + "K"
+        case Ace:
+            retVal = retVal + "A"
+        }
+    }
+
+    return retVal
 }
 
 func IsFourOfAKind(c []CardCounter) bool {
